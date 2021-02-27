@@ -15,7 +15,6 @@ pcl::PointCloud<MapCloudGenerator::PointT>::Ptr MapCloudGenerator::generate(cons
     std::cerr << "warning: keyframes empty!!" << std::endl;
     return nullptr;
   }
-
   pcl::PointCloud<PointT>::Ptr cloud(new pcl::PointCloud<PointT>());
   cloud->reserve(keyframes.front()->cloud->size() * keyframes.size());
 
@@ -29,6 +28,7 @@ pcl::PointCloud<MapCloudGenerator::PointT>::Ptr MapCloudGenerator::generate(cons
     }
   }
 
+  std::cout<<"**************map generator ********* keyframes.size() "<<keyframes.size() << " cloud->width "<< cloud->size()<<std::endl;
   cloud->width = cloud->size();
   cloud->height = 1;
   cloud->is_dense = false;

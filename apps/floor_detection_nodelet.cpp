@@ -45,6 +45,8 @@ public:
     read_until_pub = nh.advertise<std_msgs::Header>("/floor_detection/read_until", 32);
     floor_filtered_pub = nh.advertise<sensor_msgs::PointCloud2>("/floor_detection/floor_filtered_points", 32);
     floor_points_pub = nh.advertise<sensor_msgs::PointCloud2>("/floor_detection/floor_points", 32);
+
+    std::cout<<" *********** floor_detection_nodelet, sub to /filtered_points, pub /floor_detection/floor_points /floor_detection/floor_filtered_points /floor_detection/floor_coeffs\n";
   }
 
 private:
@@ -112,10 +114,29 @@ private:
 
     // filtering before RANSAC (height and normal filtering)
     pcl::PointCloud<PointT>::Ptr filtered(new pcl::PointCloud<PointT>);
+    pcl::PointCloud<PointT>::Ptr filtered2(new pcl::PointCloud<PointT>);
     pcl::transformPointCloud(*cloud, *filtered, tilt_matrix);
-    filtered = plane_clip(filtered, Eigen::Vector4f(0.0f, 0.0f, 1.0f, sensor_height + height_clip_range), false);
-    filtered = plane_clip(filtered, Eigen::Vector4f(0.0f, 0.0f, 1.0f, sensor_height - height_clip_range), true);
 
+    if (filtered->size()>0)
+    	pcl::io::savePCDFileASCII ("filtered_points.pcd", *filtered);
+
+    filtered2 = plane_clip(filtered, Eigen::Vector4f(0.0f, 0.0f, 1.0f, -(sensor_height + height_clip_range)), false);
+
+    if (filtered2->size()>0)
+    	pcl::io::savePCDFileASCII ("floor_clip_-3m.pcd", *filtered2);
+    filtered = plane_clip(filtered, Eigen::Vector4f(0.0f, 0.0f, 1.0f, (sensor_height + height_clip_range)), false);
+    if (filtered->size()>0)
+    	pcl::io::savePCDFileASCII ("floor_clip1.pcd", *filtered);
+
+    filtered = plane_clip(filtered, Eigen::Vector4f(0.0f, 0.0f, 1.0f, -(sensor_height - height_clip_range)), true);
+// the negative=true is for extract behavior. 
+
+    std::cout<<"*********floor detection after clip point #: " << filtered->size()<<std::endl;    
+	/*
+    for(int i = 0; i < filtered->size(); i++) {
+	    std::cout<<filtered->at(i)<<std::endl;
+    }*/
+    pcl::io::savePCDFileASCII ("floor_clip2.pcd", *filtered);
     if(use_normal_filtering) {
       filtered = normal_filtering(filtered);
     }
@@ -185,18 +206,27 @@ private:
    * @return
    */
   pcl::PointCloud<PointT>::Ptr plane_clip(const pcl::PointCloud<PointT>::Ptr& src_cloud, const Eigen::Vector4f& plane, bool negative) const {
+	  std::cout<<"*** plane_clip "<< plane << " cliping neg: " << negative<<std::endl;
     pcl::PlaneClipper3D<PointT> clipper(plane);
     pcl::PointIndices::Ptr indices(new pcl::PointIndices);
 
     clipper.clipPointCloud3D(*src_cloud, indices->indices);
 
     pcl::PointCloud<PointT>::Ptr dst_cloud(new pcl::PointCloud<PointT>);
+    pcl::PointCloud<PointT>::Ptr removed_cloud(new pcl::PointCloud<PointT>);
 
     pcl::ExtractIndices<PointT> extract;
     extract.setInputCloud(src_cloud);
     extract.setIndices(indices);
     extract.setNegative(negative);
     extract.filter(*dst_cloud);
+    if (dst_cloud->size()>0)
+    	pcl::io::savePCDFileASCII ("plane_clip_keep.pcd", *dst_cloud);
+
+    extract.setNegative(!negative);
+    extract.filter(*removed_cloud);
+    if (removed_cloud->size()>0)
+    	pcl::io::savePCDFileASCII ("plane_clip_remove.pcd", *removed_cloud);
 
     return dst_cloud;
   }

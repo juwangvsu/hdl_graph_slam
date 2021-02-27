@@ -1,0 +1,23 @@
+header: 
+  seq: 22127
+  stamp: 
+    secs: 1509348813
+    nsecs: 990254842
+  frame_id: "/velodyne:"
+orientation: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  w: 0.0
+orientation_covariance: [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+angular_velocity: 
+  x: -0.31873935461
+  y: 0.286354064941
+  z: 0.0937468707561
+angular_velocity_covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+linear_acceleration: 
+  x: -0.0179608799517
+  y: -1.11956143379
+  z: -9.71683597565
+linear_acceleration_covariance: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+---

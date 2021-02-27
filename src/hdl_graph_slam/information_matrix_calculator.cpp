@@ -3,10 +3,11 @@
 #include <hdl_graph_slam/information_matrix_calculator.hpp>
 
 #include <pcl/search/kdtree.h>
+#include <pcl/kdtree/kdtree.h>
 #include <pcl/common/transforms.h>
-
 namespace hdl_graph_slam {
 
+//using pcl:KdTree<PointT>::point_representation_;
 InformationMatrixCalculator::InformationMatrixCalculator(ros::NodeHandle& nh) {
   use_const_inf_matrix = nh.param<bool>("use_const_inf_matrix", false);
   const_stddev_x = nh.param<double>("const_stddev_x", 0.5);
@@ -51,18 +52,23 @@ double InformationMatrixCalculator::calc_fitness_score(const pcl::PointCloud<Poi
   tree_->setInputCloud(cloud1);
 
   double fitness_score = 0.0;
-
+//pcl::PointRepresentation<PointT> prep;
+//pcl::PointRepresentation prep;
   // Transform the input dataset using the final transformation
   pcl::PointCloud<PointT> input_transformed;
   pcl::transformPointCloud(*cloud2, input_transformed, relpose.cast<float>());
 
   std::vector<int> nn_indices(1);
   std::vector<float> nn_dists(1);
-
+  std::cout<<"******************* information_matrix_calculator.cpp test points******************\n";
+	  std::cout<<input_transformed.points[1]<<std::endl;
   // For each point in the source dataset
   int nr = 0;
   for(size_t i = 0; i < input_transformed.points.size(); ++i) {
     // Find its nearest neighbor in the target
+  //tree_->point_representation_->isValid(input_transformed.points[i]);
+//	  std::cout<<input_transformed.points[i]<<std::endl;
+// pcl::isFinite(input_transformed.points[i]);
     tree_->nearestKSearch(input_transformed.points[i], 1, nn_indices, nn_dists);
 
     // Deal with occlusions (incomplete targets)

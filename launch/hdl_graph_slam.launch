@@ -2,7 +2,7 @@
 <launch>
   <!-- arguments -->
   <arg name="nodelet_manager" default="velodyne_nodelet_manager" />
-  <arg name="enable_floor_detection" default="false" />
+  <arg name="enable_floor_detection" default="true" />
   <arg name="enable_gps" default="false" />
   <arg name="enable_imu_acc" default="false" />
   <arg name="enable_imu_ori" default="false" />
@@ -152,5 +152,5 @@
     <param name="map_cloud_resolution" value="0.05" />
   </node>
 
-  <node pkg="hdl_graph_slam" type="map2odom_publisher.py" name="map2odom_publisher" />
+  <node pkg="hdl_graph_slam" type="map2odom_publisher.py" name="map2odom_publisher" output="screen"/>
 </launch>

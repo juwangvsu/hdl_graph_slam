@@ -310,8 +310,10 @@ private:
     int num_inliers = 0;
     std::vector<int> k_indices;
     std::vector<float> k_sq_dists;
+    std::cout<<"*******************app/scan_matching_odom...cpp*********************\n";
     for(int i=0; i<aligned->size(); i++) {
       const auto& pt = aligned->at(i);
+    //  std::cout<<pt<<std::endl;//wang hack
       registration->getSearchMethodTarget()->nearestKSearch(pt, 1, k_indices, k_sq_dists);
       if(k_sq_dists[0] < max_correspondence_dist * max_correspondence_dist) {
         num_inliers++;
