@@ -308,3 +308,13 @@ conflict one:
 		 -> keyframe (scan match nodelet)
 
 depthimg_pc2 visible on both SimpleFlight or map 
+
+-----------------------------------------------------------------
+# for melodic
+sudo apt-get install ros-melodic-geodesy ros-melodic-pcl-ros ros-melodic-nmea-msgs ros-melodic-libg2o
+# for noetic
+sudo apt-get install ros-noetic-geodesy ros-noetic-pcl-ros ros-noetic-nmea-msgs ros-noetic-libg2o
+
+cd catkin_ws/src
+git clone https://github.com/koide3/ndt_omp.git
+git clone https://github.com/SMRT-AIST/fast_gicp.git --recursive

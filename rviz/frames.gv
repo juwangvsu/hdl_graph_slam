@@ -1,0 +1,23 @@
+digraph G {
+"SimpleFlight" -> "world_ned"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1614190040.835 sec old)\nBuffer length: 0.000 sec\n"];
+"SimpleFlight/odom_local_ned" -> "front_center_custom_body/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1614190040.835 sec old)\nBuffer length: 0.000 sec\n"];
+"SimpleFlight" -> "SimpleFlight/odom_local_ned"[label="Broadcaster: /airsim_node\nAverage rate: 100.199 Hz\nMost recent transform: 1614190040.826 ( 0.009 sec old)\nBuffer length: 4.920 sec\n"];
+"SimpleFlight/odom_local_ned" -> "front_center_custom_optical/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1614190040.835 sec old)\nBuffer length: 0.000 sec\n"];
+"SimpleFlight/odom_local_ned" -> "front_left_custom_body/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1614190040.835 sec old)\nBuffer length: 0.000 sec\n"];
+"SimpleFlight/odom_local_ned" -> "front_left_custom_optical/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1614190040.835 sec old)\nBuffer length: 0.000 sec\n"];
+"SimpleFlight/odom_local_ned" -> "front_right_custom_body/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1614190040.835 sec old)\nBuffer length: 0.000 sec\n"];
+"SimpleFlight/odom_local_ned" -> "front_right_custom_optical/static"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1614190040.835 sec old)\nBuffer length: 0.000 sec\n"];
+"SimpleFlight/odom_local_ned" -> "SimpleFlight/LidarCustom"[label="Broadcaster: /airsim_node\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 1614190040.835 sec old)\nBuffer length: 0.000 sec\n"];
+"world_ned" -> "base_footprint"[label="Broadcaster: /ned_to_base\nAverage rate: 10.192 Hz\nMost recent transform: 1614190040.911 ( -0.075 sec old)\nBuffer length: 4.906 sec\n"];
+"world_ned" -> "world_enu"[label="Broadcaster: /ned_to_enu_pub\nAverage rate: 10.199 Hz\nMost recent transform: 1614190040.889 ( -0.053 sec old)\nBuffer length: 4.805 sec\n"];
+"SimpleFlight" -> "front_right_custom_body"[label="Broadcaster: /airsim_node\nAverage rate: 2.083 Hz\nMost recent transform: 1614190040.439 ( 0.396 sec old)\nBuffer length: 4.321 sec\n"];
+"SimpleFlight" -> "front_right_custom_optical"[label="Broadcaster: /airsim_node\nAverage rate: 2.083 Hz\nMost recent transform: 1614190040.439 ( 0.396 sec old)\nBuffer length: 4.321 sec\n"];
+"SimpleFlight" -> "front_center_custom_body"[label="Broadcaster: /airsim_node\nAverage rate: 2.085 Hz\nMost recent transform: 1614190040.553 ( 0.282 sec old)\nBuffer length: 4.316 sec\n"];
+"SimpleFlight" -> "front_center_custom_optical"[label="Broadcaster: /airsim_node\nAverage rate: 2.085 Hz\nMost recent transform: 1614190040.553 ( 0.282 sec old)\nBuffer length: 4.316 sec\n"];
+"SimpleFlight" -> "front_left_custom_body"[label="Broadcaster: /airsim_node\nAverage rate: 4.181 Hz\nMost recent transform: 1614190040.686 ( 0.149 sec old)\nBuffer length: 4.305 sec\n"];
+"SimpleFlight" -> "front_left_custom_optical"[label="Broadcaster: /airsim_node\nAverage rate: 4.181 Hz\nMost recent transform: 1614190040.686 ( 0.149 sec old)\nBuffer length: 4.305 sec\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 1614190040.835"[ shape=plaintext ] ;
+ }->"SimpleFlight";
+}
