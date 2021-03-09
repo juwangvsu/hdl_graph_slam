@@ -131,7 +131,7 @@ private:
     filtered = plane_clip(filtered, Eigen::Vector4f(0.0f, 0.0f, 1.0f, -(sensor_height - height_clip_range)), true);
 // the negative=true is for extract behavior. 
 
-    std::cout<<"*********floor detection after clip point #: " << filtered->size()<<std::endl;    
+    //std::cout<<"*********floor detection after clip point #: " << filtered->size()<<std::endl;    
 	/*
     for(int i = 0; i < filtered->size(); i++) {
 	    std::cout<<filtered->at(i)<<std::endl;
@@ -206,7 +206,7 @@ private:
    * @return
    */
   pcl::PointCloud<PointT>::Ptr plane_clip(const pcl::PointCloud<PointT>::Ptr& src_cloud, const Eigen::Vector4f& plane, bool negative) const {
-	  std::cout<<"*** plane_clip "<< plane << " cliping neg: " << negative<<std::endl;
+//	  std::cout<<"*** plane_clip "<< plane << " cliping neg: " << negative<<std::endl;
     pcl::PlaneClipper3D<PointT> clipper(plane);
     pcl::PointIndices::Ptr indices(new pcl::PointIndices);
 

@@ -60,8 +60,10 @@
     <param name="max_acceptable_angle" value="1.0" />
     <param name="downsample_method" value="NONE" />
     <param name="downsample_resolution" value="0.1" />
-    <!-- ICP, GICP, NDT, GICP_OMP, NDT_OMP, FAST_GICP(recommended), or FAST_VGICP -->
+    <!-- ICP, GICP, NDT, GICP_OMP, NDT_OMP, FAST_GICP(recommended), or FAST_VGICP 
     <param name="registration_method" value="FAST_GICP" />
+	 -->
+    <param name="registration_method" value="NDT" />
     <param name="reg_num_threads" value="0" />
     <param name="reg_transformation_epsilon" value="0.1"/>
     <param name="reg_maximum_iterations" value="64"/>
@@ -111,8 +113,11 @@
     <param name="accum_distance_thresh" value="3.0" />
     <param name="min_edge_interval" value="1.0" />
     <param name="fitness_score_thresh" value="0.5" />
-    <!-- scan matching params -->
+    <!-- scan matching params 
+
     <param name="registration_method" value="FAST_GICP" />
+    -->
+    <param name="registration_method" value="NDT" />
     <param name="reg_num_threads" value="0" />
     <param name="reg_transformation_epsilon" value="0.1"/>
     <param name="reg_maximum_iterations" value="64"/>
@@ -155,6 +160,9 @@
     <param name="graph_update_interval" value="1.5" />
     <param name="map_cloud_update_interval" value="3.0" />
     <param name="map_cloud_resolution" value="0.01" />
+    <!-- enable or disable graph optimization
+	 -->
+    <param name="optimize" value="false" />
   </node>
 
   <node pkg="hdl_graph_slam" type="map2odom_publisher.py" name="map2odom_publisher" />

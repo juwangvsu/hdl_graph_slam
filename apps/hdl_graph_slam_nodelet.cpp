@@ -577,7 +577,11 @@ private:
 
     // optimize the pose graph
     int num_iterations = private_nh.param<int>("g2o_solver_num_iterations", 1024);
-    graph_slam->optimize(num_iterations);
+    bool optimize_ = private_nh.param<bool>("optimize", true);
+    if (optimize_){
+	    std::cout<<"***************** optimize graph ******\n";
+    	    graph_slam->optimize(num_iterations);
+    }
 
     // publish tf
     const auto& keyframe = keyframes.back();

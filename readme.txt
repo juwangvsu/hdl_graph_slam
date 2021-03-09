@@ -1,4 +1,66 @@
+3/8/21
+	now focus on scanmatch having poor result.
 
+	the time lag between ros and ue engine is a non issue. depthimg_pc2 
+	should use the current ros time (or the ros time when depth image 
+	callback is called).
+	see airsim node readme
+
+	2nd issue: even with gt odom, the map still not perfect due to 
+	map->odom tf has errors. the 
+	odom->base_link is from scanmatching
+	base_link->front_left_custom_body/static is fixed.
+		lidar2base_publisher
+	the cloud(keypoints) is in the front_left_custom_body/static frame.
+	so map->odom->base_link error messup the map 
+
+	the map is published at
+		it is a simple combine of all pc2 in all nodes(keyframes)
+		/hdl_graph_slam/map_pointsa
+		type: sensor_msgs/PointCloud2
+		frame id "map"
+
+3/6/21 
+	building99 depthimg_pc2 works quite well. the scan match is good.
+
+	build99_x10_dt.bag
+		move xyz (-10,0,-2), time lag compensated.
+	build99_rotate_dt.bag
+		rotate, time lag compensated.	
+	build99.bag
+		at 21.6 second, 8-th node added to graph, that is a bad node,
+		drone come to a stop and have pitch up/down, the pc data is not
+		quat: 0,0.039,0,0.9992 adjusted accordingly, so the
+corresponding node cause 
+		he map degrade. 
+		two methods to test: (1) dont add bad node at pitch roll motion
+			(2) adjust pc data with drone orientation data pitch/roll 
+	build99_rotate.bag
+		two rotations: 8.5 sec, 16.5 sec
+		depthimg_pc2 about 2hz,
+		depthimg  slight lag behind depthimg_pc2
+		
+3/5/21  
+	verify scan_match produced odom accuracy (relative). 
+		so problem is scan_match, test with a simple environment.
+	use bag data and recorded ground truth
+		record bag for block game. rviz data examine: 
+		visually examine the point cloud and its movement in 
+		rviz seems indicating the cloud data is accurate
+		so problem is scan_match produce a poor visual odom .
+		some keyframe and odom should not be used to produce match, 
+			esp when pitch/roll > certain degree.
+			tbd 	
+	scan_match nodelet publish airsim_odom as markers to provide a reference
+		to check/compare with visual odom, done
+	scan_match nodelet publish visual odom as markers to study
+		tbd 
+	new launch file only start filter and scan match nodelet and a tf so it will should side by side
+	with gt odom
+	/airsim_node/SimpleFlight/odom_local_ned
+
+block	bag file: 25 sec- 37 sec, first 10 meter movement
+		  55 sec - 68 sec, second 10 meter movement
 ----------------------------------------------------------------------
 2/27/21
 	scan_match nodelet , hdl slam nodelet result with airsim data
@@ -37,6 +99,9 @@ n trying to register same points?
 		roslaunch hdl_graph_slam hdl_graph_slam_airsim_lidar.launch 
 		rviz -d hdl_graph_slam_airsim.rviz
 
+		rosbag play --clock build99.bag --topics /airsim_node/SimpleFlight/depthimg_pc2 /airsim_node/SimpleFlight/odom_local_ned /tf /tf_static /airsim_node/SimpleFlight/depthimg_pc2:=/airsim_node/SimpleFlight/lidar/LidarCustom
+
+		block_10m_5m.bag
 ----------------------------------------------------------------------
 2/25/21
 	rosbag play --clock 2021-02-24-18-52-53.bag --topics /airsim_node/SimpleFlight/depthimg_pc2
@@ -81,6 +146,7 @@ bag file topics:
 rostopic echo -n 1 /velodyne_points > velodyne_points.txt
 rostopic echo -n 1 /gpsimu_driver/imu_data > imu_data.txt
 ------------------------------------------------------------
+prefiltering_nodelet:
 	sub: /velodyne_points, remapped in launch file
 		tf: base_link to frame_id of point cloud /velodyne_points
 			provided static in launch file
@@ -94,6 +160,14 @@ scan_matching_odometry_nodelet:
 	pub: /odom
 		/scan_matching_odometry/status
 		/aligned_points
+	tf: sendTransform
+		odom:   odom_frame_id=odom
+			base_frame_id=cloud_msg->header.frame_id
+			"odom->front_left_custom_body/static"
+		keyframe:
+			"odom->keyframe"
+			don't know who use it.
+
 
 	
 2021-02-25-17-55-42.bag
@@ -101,8 +175,35 @@ scan_matching_odometry_nodelet:
 -------------------------------------------------------------
 hdl_graph_slam_nodelet:
 	sub:
+		/filtered_points --- sync with odom trigger cloud_callback()
+		/odom
+		/gpsimu_driver/imu_data
+		/floor_detection/floor_coeffs
 	pub:
+		/hdl_graph_slam/markers
+		/hdl_graph_slam/odom2pub
+			this is converted to /tf:
+				"map->odom"
+				by python node map2odom_publisher.py
+		/hdl_graph_slam/map_points
+				frame_id: map
+	srv:
+		/hdl_graph_slam/dump
+		/hdl_graph_slam/save_map
 
+	two timers: 	optimize_timer_callback
+				check new keyframe, put into keyframes[]
+					keyframe.node, .cloud, .odom
+				return if no keyframe update
+			map_...timer_callback
+				return if no subscriber or no graph change
+
+--------------------------------------------------------
+map2odom_publisher.py
+	sub:
+		/hdl_graph_slam/odom2pub
+	tf:
+		"map->odom"
 ---------------------------------------------------------------
 floor filter nodelet:
 	sub: launch file says points_topic, which is used for offline.
@@ -190,4 +291,20 @@ Subscriptions:
  * /velodyne_nodelet_manager/bond [bond/Status]
  * /velodyne_points [sensor_msgs/PointCloud2]
 
+--------------------------------------------
+tf when hdl nodes runs:
+two tf tree exist:
+one tf published by airsim node, another by hdl nodelets.
+tf from airsim:
+	SimpleFlight-> ....
+tf from hdl nodelets:
+	map -> odom -> ...
+conflict one:
+	both tf on child frame front_left_custom_body/static
 
+	map->odom (map2odom_publisher.py)
+		 -> baselink (scan match nodelet)
+			    -> front_left_custom_body/static (lidar2base static)
+		 -> keyframe (scan match nodelet)
+
+depthimg_pc2 visible on both SimpleFlight or map 

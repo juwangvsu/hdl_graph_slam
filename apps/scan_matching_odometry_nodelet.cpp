@@ -27,6 +27,7 @@
 #include <hdl_graph_slam/ros_utils.hpp>
 #include <hdl_graph_slam/registrations.hpp>
 #include <hdl_graph_slam/ScanMatchingStatus.h>
+#include <visualization_msgs/MarkerArray.h>
 
 namespace hdl_graph_slam {
 
@@ -51,8 +52,12 @@ public:
     }
 
     points_sub = nh.subscribe("/filtered_points", 256, &ScanMatchingOdometryNodelet::cloud_callback, this);
+    airsim_odom_sub = nh.subscribe("/airsim_node/SimpleFlight/odom_local_ned", 32, &ScanMatchingOdometryNodelet::odom_callback, this);
     read_until_pub = nh.advertise<std_msgs::Header>("/scan_matching_odometry/read_until", 32);
     odom_pub = nh.advertise<nav_msgs::Odometry>("/odom", 32);
+    markers_odom_pub = nh.advertise<visualization_msgs::MarkerArray>("/hdl_graph_slam/markers_odom", 16);
+    markers_vodom_pub = nh.advertise<visualization_msgs::MarkerArray>("/hdl_graph_slam/markers_vodom", 16);
+
     trans_pub = nh.advertise<geometry_msgs::TransformStamped>("/scan_matching_odometry/transform", 32);
     status_pub = private_nh.advertise<ScanMatchingStatus>("/scan_matching_odometry/status", 8);
     aligned_points_pub = nh.advertise<sensor_msgs::PointCloud2>("/aligned_points", 32);
@@ -104,6 +109,73 @@ private:
 
     registration = select_registration_method(pnh);
   }
+
+  /**
+   *
+   * callback for external odom msg
+   * publish markers for comparision
+   */
+  void odom_callback(const nav_msgs::OdometryPtr& odom_msg) {
+    const ros::Time& stamp = odom_msg->header.stamp;
+    Eigen::Isometry3d odom = odom2isometry(odom_msg);
+//    std::cout<<"**************** airsim odom queue ***************\n";
+    if (odom_queue.size()==0){
+    	odom_queue.push_back(*odom_msg);
+	return;
+    }
+    //float dt= (odom_queue.back()->header.stamp.secs - odom_msg->header.stamp.secs)+ ;
+    auto dt = (odom_queue.back().header.stamp - odom_msg->header.stamp).toSec();
+ //   std::cout<<dt<<"*********\n";
+    if ( std::abs(dt) < 0.5)
+    {
+	    return;
+    }
+    //std::cout<<"**************** airsim odom queue ***************\n";
+   odom_queue.push_back(*odom_msg);
+   /*
+   for(int i = 0; i < odom_queue.size(); i++) {
+	   std::cout<<" " << odom_queue[i].pose.pose.position.x <<" "<< odom_queue[i].pose.pose.position.y <<" "<< odom_queue[i].pose.pose.position.z <<" " <<std::endl;
+   }
+   */
+   auto markers = create_marker_array(ros::Time::now(), odom_queue, 0.4);
+   markers_odom_pub.publish(markers);
+  }
+
+  /**
+   * create markers
+   *
+   */
+
+  visualization_msgs::MarkerArray create_marker_array(const ros::Time& stamp,std::deque<nav_msgs::Odometry>  od_queue, float redness ) const {
+    visualization_msgs::MarkerArray markers;
+    markers.markers.resize(4);
+
+    // node markers
+    visualization_msgs::Marker& traj_marker = markers.markers[0];
+    traj_marker.header.frame_id = "map";
+    traj_marker.header.stamp = stamp;
+    traj_marker.ns = "nodes";
+    traj_marker.id = 0;
+    traj_marker.type = visualization_msgs::Marker::SPHERE_LIST;
+
+    traj_marker.pose.orientation.w = 1.0;
+    traj_marker.scale.x = traj_marker.scale.y = traj_marker.scale.z = 0.5;
+    traj_marker.points.resize(od_queue.size());
+    traj_marker.colors.resize(od_queue.size());
+    for(int i = 0; i < od_queue.size(); i++) {
+      //Eigen::Vector3d pos = odom_queue[i].pose.pose.position;
+      geometry_msgs::Point pos = od_queue[i].pose.pose.position;
+      traj_marker.points[i].x = pos.x;
+      traj_marker.points[i].y = pos.y;
+      traj_marker.points[i].z = pos.z;
+
+      traj_marker.colors[i].r = redness ;
+      traj_marker.colors[i].g = 0.5;
+      traj_marker.colors[i].b = 0.0;
+      traj_marker.colors[i].a = 1.0;
+    }
+    return markers;
+    }
 
   /**
    * @brief callback for point clouds
@@ -289,6 +361,24 @@ private:
     odom.twist.twist.angular.z = 0.0;
 
     odom_pub.publish(odom);
+
+    //publish vodom as markers
+    //const ros::Time& stamp = odom_msg->header.stamp;
+    if (vodom_queue.size()==0){
+    	vodom_queue.push_back(odom);
+	return;
+    }
+    //float dt= (odom_queue.back()->header.stamp.secs - odom_msg->header.stamp.secs)+ ;
+    auto dt = (vodom_queue.back().header.stamp - odom.header.stamp).toSec();
+ //   std::cout<<dt<<"*********\n";
+    if ( std::abs(dt) < 0.5)
+    {
+	    return;
+    }
+    std::cout<<"**************** airsim odom queue ***************\n";
+   vodom_queue.push_back(odom);
+   auto markers = create_marker_array(ros::Time::now(), vodom_queue, 0.8);
+   markers_vodom_pub.publish(markers);
   }
 
   /**
@@ -341,6 +431,7 @@ private:
   ros::NodeHandle private_nh;
 
   ros::Subscriber points_sub;
+  ros::Subscriber airsim_odom_sub;
   ros::Subscriber msf_pose_sub;
   ros::Subscriber msf_pose_after_update_sub;
 
@@ -377,6 +468,10 @@ private:
   ros::Time keyframe_stamp;                    // keyframe time
   pcl::PointCloud<PointT>::ConstPtr keyframe;  // keyframe point cloud
 
+  ros::Publisher markers_odom_pub;
+  std::deque<nav_msgs::Odometry> odom_queue;
+  ros::Publisher markers_vodom_pub;
+  std::deque<nav_msgs::Odometry> vodom_queue;
   //
   pcl::Filter<PointT>::Ptr downsample_filter;
   pcl::Registration<PointT, PointT>::Ptr registration;
