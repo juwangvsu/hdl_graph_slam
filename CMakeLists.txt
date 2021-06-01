@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: BSD-2-Clause
 cmake_minimum_required(VERSION 2.8.3)
 project(hdl_graph_slam)
+add_definitions(-std=c++11)
 
 # Can we use C++17 in indigo?
-add_definitions(-msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2)
-set(CMAKE_CXX_FLAGS "-msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2")
+#x86 comment off if arm arch
+#add_definitions(-msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2)
+#set(CMAKE_CXX_FLAGS "-msse -msse2 -msse3 -msse4 -msse4.1 -msse4.2")
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 # pcl 1.7 causes a segfault when it is built with debug mode
@@ -104,6 +107,9 @@ add_dependencies(floor_detection_nodelet ${PROJECT_NAME}_gencpp)
 add_library(scan_matching_odometry_nodelet
   apps/scan_matching_odometry_nodelet.cpp
   src/hdl_graph_slam/registrations.cpp
+)
+add_dependencies(scan_matching_odometry_nodelet
+    ${PROJECT_NAME}_generate_messages_cpp
 )
 target_link_libraries(scan_matching_odometry_nodelet
   ${catkin_LIBRARIES}

@@ -104,9 +104,10 @@ n trying to register same points?
 		block_10m_5m.bag
 ----------------------------------------------------------------------
 2/25/21
-	rosbag play --clock 2021-02-24-18-52-53.bag --topics /airsim_node/SimpleFlight/depthimg_pc2
+	rosbag play --clock build99_x10_dt.bag --topics /airsim_node/SimpleFlight/depthimg_pc2
 	roslaunch hdl_graph_slam hdl_graph_slam_airsim.launch 
-	rviz can see map
+	cd rviz; rviz -d hdl_graph_slam.rviz
+	 can see map
 /use_sim_time true
 	this decide where the ros time or clock come from. wall clock vs
 	sim clock
